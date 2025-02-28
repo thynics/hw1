@@ -10,6 +10,7 @@ sys.path.append("python/")
 import needle as ndl
 
 
+
 def parse_mnist(image_filesname, label_filename):
     """Read an images and labels file in MNIST format.  See this page:
     http://yann.lecun.com/exdb/mnist/ for a description of the file format.
@@ -89,7 +90,18 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
     """
 
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    for i in range(0, X.data.shape[0], batch):
+        X_batch = ndl.Tensor(X.data[i:i + batch])
+        y_batch = ndl.Tensor(y.data[i:i + batch])
+        y_pred = ndl.relu(ndl.matmul(X_batch, W1)) @ W2
+        # batch * num_class,
+        y_one_hot = np.zeros_like(y_pred.cached_data)
+        y_one_hot[np.arange(y_one_hot.shape[0]), y_batch.cached_data] = 1
+        loss = softmax_loss(y_pred, ndl.Tensor(y_one_hot))
+        loss.backward()
+        W1.cached_data -= lr * W1.grad.cached_data
+        W2.cached_data -= lr * W2.grad.cached_data
+    return W1, W2
     ### END YOUR SOLUTION
 
 
